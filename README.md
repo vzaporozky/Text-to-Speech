@@ -2,11 +2,11 @@
 
 ## Installing
 
-- Download .zip file and unzip the file where you want
+-  Download .zip file and unzip the file where you want
 
 _or_
 
-- Clone from this repo:
+-  Clone from this repo:
 
 ```
 git clone
@@ -21,13 +21,4 @@ You can find more in [google documentation](https://support.google.com/chrome/a/
 
 ## Usage
 
--  Open the web site you want
--  Open Chrome DevTools
--  Find element you want change background
--  Copy class name of this element
--  Open popup of this extension
--  Enter class name to input
-   -  You can choose color for background
--  Press _save_ button
-
-## Good luck using it :)
+---
