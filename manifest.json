@@ -1,0 +1,26 @@
+{
+   "name": "text to speech",
+   "version": "0.9.0",
+   "description": "text to speech",
+   "permissions": ["storage", "tabs", "activeTab"],
+   "content_scripts": [
+      {
+         "matches": ["*://*/*"],
+         "js": ["popup.js"]
+      },
+      {
+         "matches": ["*://*/*"],
+         "js": ["./background.js"]
+      }
+   ],
+   "action": {
+      "default_icon": {
+         "16": "assets/book.png",
+         "24": "assets/book.png",
+         "32": "assets/book.png"
+      },
+      "default_title": "text to speech",
+      "default_popup": "./index.html"
+   },
+   "manifest_version": 3
+}
