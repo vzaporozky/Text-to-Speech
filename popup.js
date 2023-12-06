@@ -4,8 +4,6 @@ const changeValue = async (input, sign) => {
       "textToSpeechValues",
    ]);
 
-   // if (input.value == 0 || input.value == 0.0) return;
-
    if (sign == "minus") {
       if (input.value <= input.min) {
          input.value = input.min;
@@ -44,7 +42,7 @@ const loadValue = async (inputs, voiceSelect) => {
    const textToSpeechValues = await chrome.storage.local.get([
       "textToSpeechValues",
    ]);
-   console.log(inputs);
+   console.log(inputs); ///////////////////////////////
    inputs.forEach(
       (input) =>
          (input.value = textToSpeechValues.textToSpeechValues[input.name])
@@ -56,10 +54,9 @@ const loadValue = async (inputs, voiceSelect) => {
          textToSpeechValues.textToSpeechValues.voice
       ) {
          voiceSelect.value = option.getAttribute("data-name");
-         console.log(option);
+         console.log(option); ///////////////////////////////
       }
    });
-   // console.log(.innerHTML);
 };
 
 function debounce(func, timeout = 300) {
@@ -87,7 +84,7 @@ const saveInput = async (event) => {
 
 const getVoices = (voices, voiceSelect) => {
    voices = synth.getVoices();
-   console.log(synth.getVoices());
+   console.log(synth.getVoices()); ///////////////////////////////
 
    voices.forEach((voice) => {
       const option = document.createElement("option");
@@ -188,8 +185,6 @@ const documentEvents = async () => {
    voiceSelect.addEventListener("change", () =>
       changeSelect(voiceSelect, voices)
    );
-
-   // console.log(buttonPitch_plus);
 };
 
 document.addEventListener(

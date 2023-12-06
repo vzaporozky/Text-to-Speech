@@ -61,47 +61,48 @@ const addPlayer = async () => {
    document.querySelector(".reader-container").appendChild(main);
 };
 
-const goPlaying = (event) => speak(event, listOfParagraph);
+const goPlaying = async (event) => {
+   const lastText = await chrome.storage.local.get(["lastText"]);
 
-const speak = async (event, listOfParagraph) => {
+   speak(event, listOfParagraph, lastText);
+};
+
+const speak = async (event, listOfParagraph, lastText) => {
    const textToSpeechValues = await chrome.storage.local.get([
       "textToSpeechValues",
    ]);
    const playButton = document.querySelector(".play");
    event.stopPropagation();
 
-   console.log(listOfParagraph[0]);
+   let i;
 
-   for (let i = 0; i < Array.from(listOfParagraph).length; i++) {
-      // console.log(synth);
-      // if (synth.speaking || Array.from(listOfParagraph[i]).outerText === "")
-      //    return;
-      // if (textInput.value === "") return;
+   Array.from(listOfParagraph).forEach((paragraph) => {
+      if (lastText.lastText == paragraph.innerText) {
+         i = Array.from(listOfParagraph).findIndex((el) => el == paragraph);
+         console.log(i);
+      }
+   });
+   if (lastText.lastText) console.log(listOfParagraph);
 
+   for (i; i < Array.from(listOfParagraph).length; i++) {
       const speakText = new SpeechSynthesisUtterance(
          listOfParagraph[i].outerText
       );
-      console.log(speakText);
 
       const stopPlaying = () => {
          synth.pause();
-         playButton.addEventListener("click", goPlaying);
-         playButton.removeEventListener("click", stopPlaying);
+         playButton.addEventListener("click", goPlaying, { once: true });
+
+         chrome.storage.local.set({
+            lastText: speakText.text,
+         });
       };
 
       speakText.onstart = (e) => {
-         console.log("Started speaking...");
-         playButton.addEventListener("click", stopPlaying);
-         playButton.removeEventListener("click", goPlaying);
+         playButton.addEventListener("click", stopPlaying, { once: true });
       };
 
-      speakText.onend = (e) => {
-         console.log("Done speaking...");
-      };
-
-      // speakText.onerror = (e) => {
-      //    console.error("Something went wrong");
-      // };
+      speakText.onend = (e) => {};
 
       speakText.rate = textToSpeechValues.textToSpeechValues.rate;
       speakText.volume = textToSpeechValues.textToSpeechValues.volume;
@@ -112,17 +113,10 @@ const speak = async (event, listOfParagraph) => {
    }
 };
 
-const startPlaying = (listOfParagraph) => {
-   // textForm.addEventListener("submit", (e) => {
-   //    e.preventDefault();
-   //    speak(listOfParagraph);
-   // });
-
+const startPlaying = () => {
    const playButton = document.querySelector(".play");
 
-   playButton.addEventListener("click", goPlaying);
-
-   // voiceSelect.addEventListener("change", (e) => speak(listOfParagraph));
+   playButton.addEventListener("click", goPlaying, { once: true });
 };
 
 const mainFunc = () => {
@@ -130,19 +124,13 @@ const mainFunc = () => {
 
    listOfParagraph = document.querySelectorAll("p");
    const lengthOfList = listOfParagraph.length;
-   console.log(listOfParagraph);
-
-   // const listOfText = Array.from(listOfParagraph).map((tag) => tag.innerHTML);
 
    chrome.storage.local.set({
       lengthOfList: lengthOfList,
    });
-   chrome.storage.local.remove("lengthOfText");
 
-   // getTextFormSite(listOfParagraph);
    addPlayer();
    startPlaying(listOfParagraph);
-   document.removeEventListener("click", mainFunc);
 };
 
-document.addEventListener("click", mainFunc);
+document.addEventListener("click", mainFunc, { once: true });
