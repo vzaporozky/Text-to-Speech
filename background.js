@@ -38,6 +38,7 @@ const addPlayer = async () => {
       button.innerHTML = btn.text;
       button.classList.add(btn.class1, btn.class2);
       button.style.cssText = styleForBuuton;
+
       if (btn.class2 == "play") {
          button.style.borderTopRightRadius = 0;
          button.style.borderBottomRightRadius = 0;
@@ -64,27 +65,28 @@ const addPlayer = async () => {
 const goPlaying = async (event) => {
    const lastText = await chrome.storage.local.get(["lastText"]);
 
-   speak(event, listOfParagraph, lastText);
+   speak(event, lastText);
 };
 
-const speak = async (event, listOfParagraph, lastText) => {
+const speak = async (event, lastText) => {
    const textToSpeechValues = await chrome.storage.local.get([
       "textToSpeechValues",
    ]);
    const playButton = document.querySelector(".play");
    event.stopPropagation();
 
-   let i;
+   let LP = await chrome.storage.local.get(["lastPoint"]);
 
-   Array.from(listOfParagraph).forEach((paragraph) => {
-      if (lastText.lastText == paragraph.innerText) {
-         i = Array.from(listOfParagraph).findIndex((el) => el == paragraph);
-         console.log(i);
-      }
+   textToSpeechValues.textToSpeechValues.paragraph = listOfParagraph.length;
+   console.log(textToSpeechValues.textToSpeechValues);
+
+   chrome.storage.local.set({
+      textToSpeechValues: textToSpeechValues.textToSpeechValues,
    });
-   if (lastText.lastText) console.log(listOfParagraph);
 
-   for (i; i < Array.from(listOfParagraph).length; i++) {
+   console.log(chrome.storage.local.get(["lastPoint"]));
+
+   for (let i = LP.LP; i < Array.from(listOfParagraph).length; i++) {
       const speakText = new SpeechSynthesisUtterance(
          listOfParagraph[i].outerText
       );
@@ -95,6 +97,18 @@ const speak = async (event, listOfParagraph, lastText) => {
 
          chrome.storage.local.set({
             lastText: speakText.text,
+         });
+
+         lastText = chrome.storage.local.get(["lastText"]);
+
+         Array.from(listOfParagraph).forEach((paragraph) => {
+            if (lastText.lastText == paragraph.innerText) {
+               chrome.storage.local.set({
+                  lastPoint: Array.from(listOfParagraph).findIndex(
+                     (el) => el == paragraph
+                  ),
+               });
+            }
          });
       };
 
@@ -123,14 +137,11 @@ const mainFunc = () => {
    if (window.location.toString().indexOf("ranobelib.me") == -1) return;
 
    listOfParagraph = document.querySelectorAll("p");
-   const lengthOfList = listOfParagraph.length;
 
-   chrome.storage.local.set({
-      lengthOfList: lengthOfList,
-   });
+   chrome.storage.local.remove(["lengthOfList"]);
 
    addPlayer();
-   startPlaying(listOfParagraph);
+   startPlaying();
 };
 
 document.addEventListener("click", mainFunc, { once: true });
