@@ -11,13 +11,13 @@ getValues();
 
 const changeValue = async (input, sign) => {
    if (sign == "minus") {
-      if (input.value <= input.min) {
+      if (Number(input.value) <= Number(input.min)) {
          input.value = input.min;
          return;
       }
 
       if (input.name == "paragraph") {
-         input.value = input.value - 1;
+         input.value = input.value - input.step;
 
          lastPoint.lastPoint = Number(input.value);
 
@@ -26,7 +26,7 @@ const changeValue = async (input, sign) => {
          });
          console.log(chrome.storage.local.get(["lastPoint"]));
       } else {
-         input.value = (input.value - 0.1).toFixed(1);
+         input.value = (input.value - input.step).toFixed(1);
 
          textToSpeechValues.textToSpeechValues[input.name] = Number(
             input.value
@@ -37,13 +37,13 @@ const changeValue = async (input, sign) => {
          });
       }
    } else {
-      if (input.value >= input.max) {
+      if (Number(input.value) >= Number(input.max)) {
          input.value = input.max;
          return;
       }
 
       if (input.name == "paragraph") {
-         input.value = -(-input.value - 1);
+         input.value = -(-input.value - input.step);
 
          lastPoint.lastPoint = Number(input.value);
 
@@ -52,7 +52,7 @@ const changeValue = async (input, sign) => {
          });
          console.log(chrome.storage.local.get(["lastPoint"]));
       } else {
-         input.value = -(-input.value - 0.1).toFixed(1);
+         input.value = -(-input.value - input.step).toFixed(1);
 
          textToSpeechValues.textToSpeechValues[input.name] = Number(
             input.value
