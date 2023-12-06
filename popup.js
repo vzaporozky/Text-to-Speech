@@ -1,3 +1,4 @@
+const synth = window.speechSynthesis;
 const changeValue = async (input, sign) => {
    const textToSpeechValues = await chrome.storage.local.get([
       "textToSpeechValues",
@@ -39,7 +40,7 @@ const changeValue = async (input, sign) => {
    console.log(chrome.storage.local.get(["textToSpeechValues"])); ///////////////////////
 };
 
-const loadValue = async (inputs) => {
+const loadValue = async (inputs, voiceSelect) => {
    const textToSpeechValues = await chrome.storage.local.get([
       "textToSpeechValues",
    ]);
@@ -48,6 +49,17 @@ const loadValue = async (inputs) => {
       (input) =>
          (input.value = textToSpeechValues.textToSpeechValues[input.name])
    );
+
+   Array.from(voiceSelect.children).forEach((option) => {
+      if (
+         option.getAttribute("data-name") ==
+         textToSpeechValues.textToSpeechValues.voice
+      ) {
+         voiceSelect.value = option.getAttribute("data-name");
+         console.log(option);
+      }
+   });
+   // console.log(.innerHTML);
 };
 
 function debounce(func, timeout = 300) {
@@ -73,19 +85,50 @@ const saveInput = async (event) => {
    });
 };
 
+const getVoices = (voices, voiceSelect) => {
+   voices = synth.getVoices();
+   console.log(synth.getVoices());
+
+   voices.forEach((voice) => {
+      const option = document.createElement("option");
+      option.textContent = voice.name + "(" + voice.lang + ")";
+
+      option.setAttribute("data-lang", voice.lang);
+      option.setAttribute("data-name", voice.name);
+      option.setAttribute("value", voice.name);
+      voiceSelect.appendChild(option);
+   });
+   return voices;
+};
+
+const changeSelect = async (voiceSelect, voices) => {
+   const textToSpeechValues = await chrome.storage.local.get([
+      "textToSpeechValues",
+   ]);
+
+   const selectedVoice =
+      voiceSelect.selectedOptions[0].getAttribute("data-name");
+
+   voices.forEach((voice) => {
+      if (voice.name === selectedVoice) {
+         textToSpeechValues.textToSpeechValues.voice = selectedVoice;
+
+         chrome.storage.local.set({
+            textToSpeechValues: textToSpeechValues.textToSpeechValues,
+         });
+      }
+   });
+};
+
 const processChange = debounce((event) => saveInput(event));
 
 const documentEvents = async () => {
-   // chrome.tabs.getSelected(null, function (tab) {
-   //    //<-- "tab" has all the information
-   //    console.log(tab.url); //returns the url
-   //    console.log(tab.title); //returns the title
-   // });
    const textToSpeechValues = await chrome.storage.local.get([
       "textToSpeechValues",
    ]);
    const lengthOfText = await chrome.storage.local.get(["lengthOfText"]);
-   // values.textToSpeechValues.rate = 1;
+   let voices = [];
+
    console.log(textToSpeechValues); ///////////////////////////////
 
    const buttonParMinus = document.querySelector(".button__paragraph_minus");
@@ -103,9 +146,11 @@ const documentEvents = async () => {
    const inputPitch = document.querySelector(".input_pitch");
    const inputVolume = document.querySelector(".input_volume");
 
+   const voiceSelect = document.querySelector("select");
+
    inputPar.max = lengthOfText.lengthOfText;
 
-   loadValue([inputPar, inputRate, inputPitch, inputVolume]);
+   loadValue([inputPar, inputRate, inputPitch, inputVolume], voiceSelect);
 
    buttonParMinus.addEventListener("click", () =>
       changeValue(inputPar, "minus")
@@ -137,6 +182,12 @@ const documentEvents = async () => {
    inputRate.addEventListener("input", (event) => processChange(event));
    inputPitch.addEventListener("input", (event) => processChange(event));
    inputVolume.addEventListener("input", (event) => processChange(event));
+
+   voices = getVoices(voices, voiceSelect);
+
+   voiceSelect.addEventListener("change", () =>
+      changeSelect(voiceSelect, voices)
+   );
 
    // console.log(buttonPitch_plus);
 };

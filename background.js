@@ -1,5 +1,3 @@
-// import { app } from "./App";
-
 const buttonsObj = [
    { text: "play", class1: "icon", class2: "play" },
    { text: "&#x2771;&#x2771;&#x2771;", class1: "icon", class2: "forward" },
@@ -23,9 +21,8 @@ const styleForBuuton = `
       border-radius: 5px;
       border: none;`;
 
-const synth = window.speechSynthesis;
-let isChrome = !!window.chrome && !!window.chrome.webstore;
 let voices = [];
+let listOfParagraph;
 
 const addPlayer = async () => {
    if (document.querySelector("body").ext) return;
@@ -64,108 +61,88 @@ const addPlayer = async () => {
    document.querySelector(".reader-container").appendChild(main);
 };
 
-const getTextFormSite = (listOfParagraph) => {
-   const lengthOfText = listOfParagraph.length;
-
-   // console.log(lengthOfText); /////////////
-
-   chrome.storage.local.set({
-      lengthOfText: lengthOfText,
-   });
-};
-
-const getVoices = () => {
-   voices = synth.getVoices();
-   console.log(voices);
-
-   voices.forEach((voice) => {
-      const option = document.createElement("option");
-      option.textContent = voice.name + "(" + voice.lang + ")";
-
-      option.setAttribute("data-lang", voice.lang);
-      option.setAttribute("data-name", voice.name);
-      // voiceSelect.appendChild(option);
-   });
-};
+const goPlaying = (event) => speak(event, listOfParagraph);
 
 const speak = async (event, listOfParagraph) => {
-   event.stopPropagation();
-   if (synth.speaking || listOfParagraph[0] === "") return;
-   // if (textInput.value === "") return;
-
-   const speakText = new SpeechSynthesisUtterance(listOfParagraph[0]);
-
-   speakText.onend = (e) => {
-      console.log("Done speaking...");
-   };
-
-   speakText.onerror = (e) => {
-      console.error("Something went wrong");
-   };
-
-   // const selectedVoice =
-   //    voiceSelect.selectedOptions[0].getAttribute("data-name");
-   const selectedVoice = "Microsoft Irina - Russian (Russia)";
-
-   voices.forEach((voice) => {
-      if (voice.name === selectedVoice) speakText.voice = voice;
-   });
-
    const textToSpeechValues = await chrome.storage.local.get([
       "textToSpeechValues",
    ]);
+   const playButton = document.querySelector(".play");
+   event.stopPropagation();
 
-   // console.log(voices);
-   // console.log(speakText);
-   // console.log(textToSpeechValues.textToSpeechValues);
+   console.log(listOfParagraph[0]);
 
-   speakText.rate = textToSpeechValues.textToSpeechValues.rate;
-   speakText.volume = textToSpeechValues.textToSpeechValues.volume;
-   speakText.pitch = textToSpeechValues.textToSpeechValues.pitch;
-   synth.speak(speakText);
+   for (let i = 0; i < Array.from(listOfParagraph).length; i++) {
+      // console.log(synth);
+      // if (synth.speaking || Array.from(listOfParagraph[i]).outerText === "")
+      //    return;
+      // if (textInput.value === "") return;
+
+      const speakText = new SpeechSynthesisUtterance(
+         listOfParagraph[i].outerText
+      );
+      console.log(speakText);
+
+      const stopPlaying = () => {
+         synth.pause();
+         playButton.addEventListener("click", goPlaying);
+         playButton.removeEventListener("click", stopPlaying);
+      };
+
+      speakText.onstart = (e) => {
+         console.log("Started speaking...");
+         playButton.addEventListener("click", stopPlaying);
+         playButton.removeEventListener("click", goPlaying);
+      };
+
+      speakText.onend = (e) => {
+         console.log("Done speaking...");
+      };
+
+      // speakText.onerror = (e) => {
+      //    console.error("Something went wrong");
+      // };
+
+      speakText.rate = textToSpeechValues.textToSpeechValues.rate;
+      speakText.volume = textToSpeechValues.textToSpeechValues.volume;
+      speakText.pitch = textToSpeechValues.textToSpeechValues.pitch;
+      // speakText.voice = textToSpeechValues.textToSpeechValues.voice;
+      // console.log(textToSpeechValues.textToSpeechValues.voice);
+      synth.speak(speakText);
+   }
 };
 
 const startPlaying = (listOfParagraph) => {
-   // if (isChrome) {
-   // if (synth.onvoiceschanged !== undefined) {
-   // synth.onvoiceschanged = getVoices;
-   // }
-   // }
-   // console.log(e);
-   getVoices();
-
    // textForm.addEventListener("submit", (e) => {
    //    e.preventDefault();
    //    speak(listOfParagraph);
    // });
 
    const playButton = document.querySelector(".play");
-   playButton.addEventListener("click", (event) =>
-      speak(event, listOfParagraph)
-   );
+
+   playButton.addEventListener("click", goPlaying);
 
    // voiceSelect.addEventListener("change", (e) => speak(listOfParagraph));
 };
 
 const mainFunc = () => {
    if (window.location.toString().indexOf("ranobelib.me") == -1) return;
-   // console.log(synth);
-   // console.log(isChrome);
-   // console.log(window.chrome);
-   // console.log(window.chrome.webstore);
-   // !!window.chrome && !!window.chrome.webstore;
 
-   const listOfParagraph = Array.from(document.querySelectorAll("p")).map(
-      (tag) => tag.innerHTML
-   );
+   listOfParagraph = document.querySelectorAll("p");
+   const lengthOfList = listOfParagraph.length;
+   console.log(listOfParagraph);
 
-   getTextFormSite(listOfParagraph);
+   // const listOfText = Array.from(listOfParagraph).map((tag) => tag.innerHTML);
+
+   chrome.storage.local.set({
+      lengthOfList: lengthOfList,
+   });
+   chrome.storage.local.remove("lengthOfText");
+
+   // getTextFormSite(listOfParagraph);
    addPlayer();
-
-   // const playButton = document.querySelector(".play");
-   // playButton.addEventListener("click", (e) =>
    startPlaying(listOfParagraph);
-   // );
+   document.removeEventListener("click", mainFunc);
 };
 
 document.addEventListener("click", mainFunc);
