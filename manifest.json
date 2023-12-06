@@ -6,11 +6,11 @@
    "content_scripts": [
       {
          "matches": ["*://*/*"],
-         "js": ["popup.js"]
+         "js": ["src/popup.js"]
       },
       {
          "matches": ["*://*/*"],
-         "js": ["./background.js"]
+         "js": ["src/background.js"]
       }
    ],
    "action": {
@@ -20,7 +20,7 @@
          "32": "assets/book.png"
       },
       "default_title": "text to speech",
-      "default_popup": "./index.html"
+      "default_popup": "./src/index.html"
    },
    "manifest_version": 3
 }
