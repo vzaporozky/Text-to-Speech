@@ -42,25 +42,40 @@ const changeValue = async (input, sign) => {
          return;
       }
 
-      input.name == "paragraph"
-         ? (input.value = -(-input.value - 1))
-         : (input.value = -(-input.value - 0.1).toFixed(1));
+      if (input.name == "paragraph") {
+         input.value = -(-input.value - 1);
 
-      textToSpeechValues.textToSpeechValues[input.name] = Number(input.value);
+         lastPoint.lastPoint = Number(input.value);
 
-      chrome.storage.local.set({
-         textToSpeechValues: textToSpeechValues.textToSpeechValues,
-      });
+         chrome.storage.local.set({
+            lastPoint: lastPoint.lastPoint,
+         });
+         console.log(chrome.storage.local.get(["lastPoint"]));
+      } else {
+         input.value = -(-input.value - 0.1).toFixed(1);
+
+         textToSpeechValues.textToSpeechValues[input.name] = Number(
+            input.value
+         );
+
+         chrome.storage.local.set({
+            textToSpeechValues: textToSpeechValues.textToSpeechValues,
+         });
+      }
    }
    console.log(chrome.storage.local.get(["textToSpeechValues"])); ///////////////////////
 };
 
 const loadValue = async (inputs, voiceSelect) => {
    console.log(inputs); ///////////////////////////////
-   inputs.forEach(
-      (input) =>
-         (input.value = textToSpeechValues.textToSpeechValues[input.name])
-   );
+   inputs.forEach(async (input) => {
+      if (input.name == "paragraph") {
+         lastPoint = await chrome.storage.local.get(["lastPoint"]);
+         input.value = lastPoint.lastPoint;
+      } else {
+         input.value = textToSpeechValues.textToSpeechValues[input.name];
+      }
+   });
 
    Array.from(voiceSelect.children).forEach((option) => {
       if (
@@ -135,7 +150,6 @@ const changeSelect = async (voiceSelect, voices) => {
 const processChange = debounce((event) => saveInput(event));
 
 const documentEvents = async () => {
-   chrome.storage.local.remove(["lengthOfList"]);
    let voices = [];
 
    console.log(textToSpeechValues); ///////////////////////////////

@@ -78,20 +78,17 @@ const speak = async (event, lastText) => {
    let LP = await chrome.storage.local.get(["lastPoint"]);
 
    textToSpeechValues.textToSpeechValues.paragraph = listOfParagraph.length;
-   console.log(textToSpeechValues.textToSpeechValues);
 
    chrome.storage.local.set({
       textToSpeechValues: textToSpeechValues.textToSpeechValues,
    });
 
-   console.log(chrome.storage.local.get(["lastPoint"]));
-
-   for (let i = LP.LP; i < Array.from(listOfParagraph).length; i++) {
+   for (let i = LP.lastPoint; i < Array.from(listOfParagraph).length; i++) {
       const speakText = new SpeechSynthesisUtterance(
          listOfParagraph[i].outerText
       );
 
-      const stopPlaying = () => {
+      const stopPlaying = async () => {
          synth.pause();
          playButton.addEventListener("click", goPlaying, { once: true });
 
@@ -99,7 +96,8 @@ const speak = async (event, lastText) => {
             lastText: speakText.text,
          });
 
-         lastText = chrome.storage.local.get(["lastText"]);
+         let lastText = await chrome.storage.local.get(["lastText"]);
+         console.log(lastText.lastText);
 
          Array.from(listOfParagraph).forEach((paragraph) => {
             if (lastText.lastText == paragraph.innerText) {
@@ -113,6 +111,7 @@ const speak = async (event, lastText) => {
       };
 
       speakText.onstart = (e) => {
+         // console.log(listOfParagraph[i].innerText);
          playButton.addEventListener("click", stopPlaying, { once: true });
       };
 
@@ -137,8 +136,6 @@ const mainFunc = () => {
    if (window.location.toString().indexOf("ranobelib.me") == -1) return;
 
    listOfParagraph = document.querySelectorAll("p");
-
-   chrome.storage.local.remove(["lengthOfList"]);
 
    addPlayer();
    startPlaying();
